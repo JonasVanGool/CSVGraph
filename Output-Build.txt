@@ -1,0 +1,3 @@
+﻿1>------ Build started: Project: LoggingTest, Configuration: Release Any CPU ------
+1>  LoggingTest -> C:\Users\2425\Documents\GitHub\LoggingTest\LoggingTest\bin\Release\LoggingTest.exe
+========== Build: 1 succeeded, 0 failed, 0 up-to-date, 0 skipped ==========

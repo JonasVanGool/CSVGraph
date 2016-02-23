@@ -1,0 +1,9 @@
+C:\Users\2425\Documents\GitHub\LoggingTest\LoggingTest\bin\Debug\LoggingTest.exe.config
+C:\Users\2425\Documents\GitHub\LoggingTest\LoggingTest\bin\Debug\LoggingTest.exe
+C:\Users\2425\Documents\GitHub\LoggingTest\LoggingTest\bin\Debug\LoggingTest.pdb
+C:\Users\2425\Documents\GitHub\LoggingTest\LoggingTest\obj\Debug\LoggingTest.Form1.resources
+C:\Users\2425\Documents\GitHub\LoggingTest\LoggingTest\obj\Debug\LoggingTest.Properties.Resources.resources
+C:\Users\2425\Documents\GitHub\LoggingTest\LoggingTest\obj\Debug\LoggingTest.csproj.GenerateResource.Cache
+C:\Users\2425\Documents\GitHub\LoggingTest\LoggingTest\obj\Debug\LoggingTest.exe
+C:\Users\2425\Documents\GitHub\LoggingTest\LoggingTest\obj\Debug\LoggingTest.pdb
+C:\Users\2425\Documents\GitHub\LoggingTest\LoggingTest\obj\Debug\LoggingTest.csprojResolveAssemblyReference.cache

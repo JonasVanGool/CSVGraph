@@ -1,0 +1,8 @@
+C:\Users\2425\Documents\GitHub\CSVGraph\LoggingTest\bin\Release\CSVGraph.exe.config
+C:\Users\2425\Documents\GitHub\CSVGraph\LoggingTest\bin\Release\CSVGraph.exe
+C:\Users\2425\Documents\GitHub\CSVGraph\LoggingTest\bin\Release\CSVGraph.pdb
+C:\Users\2425\Documents\GitHub\CSVGraph\LoggingTest\obj\Release\CSVGraph.Properties.Resources.resources
+C:\Users\2425\Documents\GitHub\CSVGraph\LoggingTest\obj\Release\CSVGraph.csproj.GenerateResource.Cache
+C:\Users\2425\Documents\GitHub\CSVGraph\LoggingTest\obj\Release\CSVGraph.exe
+C:\Users\2425\Documents\GitHub\CSVGraph\LoggingTest\obj\Release\CSVGraph.pdb
+C:\Users\2425\Documents\GitHub\CSVGraph\LoggingTest\obj\Release\CSVGraph.CSVGraph.resources

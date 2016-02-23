@@ -1,0 +1,17 @@
+C:\Users\2425\Documents\GitHub\CSVGraph\LoggingTest\bin\Debug\CSVGraph.exe.config
+C:\Users\2425\Documents\GitHub\CSVGraph\LoggingTest\bin\Debug\CSVGraph.exe
+C:\Users\2425\Documents\GitHub\CSVGraph\LoggingTest\bin\Debug\CSVGraph.pdb
+C:\Users\2425\Documents\GitHub\CSVGraph\LoggingTest\obj\Debug\CSVGraph.CSVGraph.resources
+C:\Users\2425\Documents\GitHub\CSVGraph\LoggingTest\obj\Debug\CSVGraph.Properties.Resources.resources
+C:\Users\2425\Documents\GitHub\CSVGraph\LoggingTest\obj\Debug\CSVGraph.csproj.GenerateResource.Cache
+C:\Users\2425\Documents\GitHub\CSVGraph\LoggingTest\obj\Debug\CSVGraph.exe
+C:\Users\2425\Documents\GitHub\CSVGraph\LoggingTest\obj\Debug\CSVGraph.pdb
+C:\Users\2425\Documents\GitHub\CSVGraph\CSVGraph\bin\Debug\CSVGraph.exe.config
+C:\Users\2425\Documents\GitHub\CSVGraph\CSVGraph\obj\Debug\CSVGraph.exe
+C:\Users\2425\Documents\GitHub\CSVGraph\CSVGraph\obj\Debug\CSVGraph.pdb
+C:\Users\2425\Documents\GitHub\CSVGraph\CSVGraph\bin\Debug\CSVGraph.exe
+C:\Users\2425\Documents\GitHub\CSVGraph\CSVGraph\bin\Debug\CSVGraph.pdb
+C:\Users\2425\Documents\GitHub\CSVGraph\CSVGraph\obj\Debug\CSVGraph.csprojResolveAssemblyReference.cache
+C:\Users\2425\Documents\GitHub\CSVGraph\CSVGraph\obj\Debug\CSVGraph.CSVGraph.resources
+C:\Users\2425\Documents\GitHub\CSVGraph\CSVGraph\obj\Debug\CSVGraph.Properties.Resources.resources
+C:\Users\2425\Documents\GitHub\CSVGraph\CSVGraph\obj\Debug\CSVGraph.csproj.GenerateResource.Cache
