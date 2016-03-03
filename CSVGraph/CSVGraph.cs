@@ -17,6 +17,7 @@ namespace CSVGraph
     public partial class CSVGraph : Form
     {
         LinkedList<PointF> calculationAreaPoints;
+        string workingFileInfo = "";
 
         public CSVGraph(string filePath = null)
         {
@@ -31,6 +32,7 @@ namespace CSVGraph
             this.listView2.DoubleClick += listView2_DoubleClick;
             if (filePath != null)
             {
+                workingFileInfo = textBox1.Text.Split('\\').Last();
                 AddData(new StreamReader(File.OpenRead(@filePath)));
             }
             else
@@ -58,6 +60,7 @@ namespace CSVGraph
 
                 Stream responseStream = response.GetResponseStream();
                 StreamReader reader = new StreamReader(responseStream);
+                workingFileInfo = adress;
                 AddData(reader);
                 tabControl1.SelectedIndex = 0;
             }
@@ -90,8 +93,10 @@ namespace CSVGraph
             {
                 // Assign the cursor in the Stream to the Form's Cursor property.
                 textBox1.Text = openFileDialog1.InitialDirectory + openFileDialog1.FileName;
+                workingFileInfo = textBox1.Text.Split('\\').Last();
                 AddData(new StreamReader(File.OpenRead(@textBox1.Text)));
             }
+            
         }
 
         private void AddData(StreamReader csvStream)
@@ -131,11 +136,16 @@ namespace CSVGraph
             }
 
             chart1.ApplyPaletteColors();
+            comboBox1.Items.Clear();
             foreach (Series item in chart1.Series){
                 listView1.Items.Add(@item.Name);
                 listView1.Items[listView1.Items.Count-1].BackColor = item.Color;
                 comboBox1.Items.Add(@item.Name);
             }
+            listView1.Items[0].Checked = true;
+            comboBox1.SelectedIndex = 0;
+            tabControl1.SelectedIndex = 0;
+            this.Text = workingFileInfo;
         }
 
         private void listView1_ItemChecked(object sender, System.Windows.Forms.ItemCheckedEventArgs e)
@@ -194,6 +204,8 @@ namespace CSVGraph
             }
             else
             {
+                if (chart1.Series.FindByName("cross1") == null)
+                    return;
                 chart1.Series["cross1"].Points.Clear();
                 chart1.Series.Remove(chart1.Series["cross1"]);
                 calculationAreaPoints = null;
