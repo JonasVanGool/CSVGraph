@@ -14,4 +14,3 @@ C:\Users\2425\Documents\GitHub\CSVGraph\CSVGraph\bin\Release\CSVGraph.pdb
 C:\Users\2425\Documents\GitHub\CSVGraph\CSVGraph\obj\Release\CSVGraph.CSVGraph.resources
 C:\Users\2425\Documents\GitHub\CSVGraph\CSVGraph\obj\Release\CSVGraph.Properties.Resources.resources
 C:\Users\2425\Documents\GitHub\CSVGraph\CSVGraph\obj\Release\CSVGraph.csproj.GenerateResource.Cache
-C:\Users\2425\Documents\GitHub\CSVGraph\CSVGraph\obj\Release\CSVGraph.csprojResolveAssemblyReference.cache

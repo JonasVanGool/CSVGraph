@@ -33,7 +33,7 @@ namespace CSVGraph
             this.Text = "Quick CSV Grapher";
             if (filePath != null)
             {
-                workingFileInfo = textBox1.Text.Split('\\').Last();
+                workingFileInfo = filePath.Split('\\').Last();
                 AddData(new StreamReader(File.OpenRead(@filePath)));
             }
             else
