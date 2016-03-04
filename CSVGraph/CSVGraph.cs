@@ -30,6 +30,7 @@ namespace CSVGraph
             this.button1.Click +=button1_Click;
             this.textBox2.KeyDown += textBox2_KeyDown;
             this.listView2.DoubleClick += listView2_DoubleClick;
+            this.Text = "Quick CSV Grapher";
             if (filePath != null)
             {
                 workingFileInfo = textBox1.Text.Split('\\').Last();
@@ -38,9 +39,7 @@ namespace CSVGraph
             else
             {
                 //AddData(new StreamReader(File.OpenRead(@"C:\\Lift1_EGV001_2015-11-05_133317.CSV")));
-            }
-            
-            this.Text = "Quick CSV Grapher";
+            }                  
         }
 
         void listView2_DoubleClick(object sender, EventArgs e)
