@@ -128,7 +128,18 @@ namespace CSVGraph
                 {
                     for (int i = 0; i < chart1.Series.Count; i++)
                     {
-                        chart1.Series[i].Points.AddXY(Convert.ToDouble(values[0]), Convert.ToDouble(values[1 + i]));
+                        double x = 0;
+                        double y = 0;
+                        if (!double.TryParse(values[0], out x) || !double.TryParse(values[1 + i], out y))
+                        {
+                            // Failed parsing
+                            MessageBox.Show("Failed parsing: Change Region settings in Control Panel!");
+                            return;
+                        }
+                        else
+                        {
+                            chart1.Series[i].Points.AddXY(x, y);
+                        }    
                     }
                 }
                 first = false;
