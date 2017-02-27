@@ -20,7 +20,7 @@ namespace CSVGraph
             {
                 if (args[0].EndsWith(".CSV"))
                 {
-                    Application.Run(new CSVGraph(args[0]));
+                    Application.Run(new CSVGraph(args));
                 }
                 else
                 {
