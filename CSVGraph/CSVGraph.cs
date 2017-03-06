@@ -17,9 +17,13 @@ namespace CSVGraph
     public partial class CSVGraph : Form
     {
         LinkedList<PointF> calculationAreaPoints;
+        string dataCharArea = "";
+        string dataCharAreaPre = "";
         ContextMenu legendContectMenu;
+        ContextMenu chartAreaContectMenu;
+        int addDataCounter = 0;
 
-        public CSVGraph(string filePath = null)
+        public CSVGraph(string[] arguments = null)
         {
             InitializeComponent();
             legendContectMenu = createLegendContextMenu();
@@ -33,10 +37,12 @@ namespace CSVGraph
             this.dataIPTextBox.KeyDown += dataIPTextBox_KeyDown;
             this.dataRemoteList.DoubleClick += dataRemoteList_DoubleClick;
             this.Text = "Quick CSV Grapher";
-            if (filePath != null)
+            if (arguments != null)
             {
-
-                AddData(new StreamReader(File.OpenRead(@filePath)),filePath.Split('\\').Last());
+                foreach(string filepath in arguments)
+                {
+                    AddData(new StreamReader(File.OpenRead(@filepath)), filepath.Split('\\').Last());
+                }
             }
             else
             {
@@ -48,6 +54,9 @@ namespace CSVGraph
         {
             ContextMenu tempContextMenu = new ContextMenu();
 
+            MenuItem mnuItemNewChart = new MenuItem();
+            mnuItemNewChart.Text = "New Chart";
+            mnuItemNewChart.Click +=mnuItemNewChart_Click;
             MenuItem mnuItemLineWidth = new MenuItem();
             mnuItemLineWidth.Text = "Line width";
             MenuItem mnuItemLineWidth_1 = new MenuItem();
@@ -59,18 +68,29 @@ namespace CSVGraph
             MenuItem mnuItemLineWidth_3 = new MenuItem();
             mnuItemLineWidth_3.Text = "3";
             mnuItemLineWidth_3.Click += mnuItemLineWidth_3_Click;
-            mnuItemLineWidth.MenuItems.Add(mnuItemLineWidth_1 );
+            mnuItemLineWidth.MenuItems.Add(mnuItemLineWidth_1);
+            mnuItemLineWidth.MenuItems.Add(mnuItemLineWidth_2);
+            mnuItemLineWidth.MenuItems.Add(mnuItemLineWidth_3);
 
-            mnuItemLineWidth.MenuItems.Add(mnuItemLineWidth_2 );
-            mnuItemLineWidth.MenuItems.Add(mnuItemLineWidth_3 );
             MenuItem mnuItemLineColor = new MenuItem();
             mnuItemLineColor.Text = "Line color";
             mnuItemLineColor.Click += mnuItemLineColor_Click;
 
+            tempContextMenu.MenuItems.Add(mnuItemNewChart);
             tempContextMenu.MenuItems.Add(mnuItemLineColor);
             tempContextMenu.MenuItems.Add(mnuItemLineWidth);
 
             return tempContextMenu;
+        }
+
+        void mnuItemNewChart_Click(object sender, EventArgs e)
+        {
+            legendListView.SelectedItems[0].Checked = true;
+            mainChart.ChartAreas.Add(new ChartArea(legendListView.SelectedItems[0].Text));
+            mainChart.ChartAreas.Last().AlignWithChartArea = mainChart.ChartAreas.First().Name;
+            mainChart.ChartAreas.Last().AlignmentOrientation = AreaAlignmentOrientations.Vertical;
+            mainChart.ChartAreas.Last().AlignmentStyle = AreaAlignmentStyles.All;
+            mainChart.Series[legendListView.SelectedItems[0].Text].ChartArea = mainChart.ChartAreas.Last().Name;
         }
 
         void mnuItemLineColor_Click(object sender, EventArgs e)
@@ -81,6 +101,12 @@ namespace CSVGraph
                 mainChart.Series[legendListView.SelectedItems[0].Text].Color = colorDialog1.Color;
                 legendListView.SelectedItems[0].BackColor = colorDialog1.Color;
                 calculationItemComboBox.Refresh();
+                // set correct colors accoring to main legend
+                foreach (ListViewItem item in legendListView.Items)
+                {
+                    mainChart.Series[item.Text].Color = item.BackColor;
+                }
+
             }
         }
 
@@ -151,24 +177,30 @@ namespace CSVGraph
             OpenFileDialog openFileDialog1 = new OpenFileDialog();
             openFileDialog1.Filter = "CSV Files|*.csv";
             openFileDialog1.Title = "Select a CSVFile";
+            openFileDialog1.Multiselect = true;
 
             // Show the Dialog.
             // If the user clicked OK in the dialog and
             // a .CUR file was selected, open it.
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                // Assign the cursor in the Stream to the Form's Cursor property.
-                textBox1.Text = openFileDialog1.InitialDirectory + openFileDialog1.FileName;
-                AddData(new StreamReader(File.OpenRead(@textBox1.Text)), textBox1.Text.Split('\\').Last());
+                // Read the files
+                foreach (String file in openFileDialog1.FileNames)
+                {
+                    // Assign the cursor in the Stream to the Form's Cursor property.
+                    textBox1.Text = openFileDialog1.InitialDirectory + file;
+                    AddData(new StreamReader(File.OpenRead(@textBox1.Text)), textBox1.Text.Split('\\').Last());
+                }
             }
             
         }
 
         private void AddData(StreamReader csvStream, string workingFileInfo)
         {
+            addDataCounter++;
             var reader = csvStream; // new StreamReader(File.OpenRead(@filePath));
-            List<string> listA = new List<string>();
-            List<string> listB = new List<string>();
+            List<string> names = new List<string>();
+
             Boolean first = true;
             while (!reader.EndOfStream)
             {
@@ -176,23 +208,27 @@ namespace CSVGraph
                 var values = line.Split(',');
                 if (first)
                 {
-                    mainChart.Series.Clear();
-                    legendListView.Items.Clear();
+                    names.Clear();
+                    if (mainChart.Series.FindByName("Series1") != null)
+                        mainChart.Series.Remove(mainChart.Series.FindByName("Series1"));
+                    //legendListView.Items.Clear();
                     legendListView.Columns[0].Text = "Legend";
                     legendListView.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
                     foreach (var name in values)
                     {
                         if (name != values[0])
                         {
-                            mainChart.Series.Add(name);
-                            mainChart.Series[name].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
-                            mainChart.Series[name].ToolTip = "#VALX, #VALY";
+                            names.Add(addDataCounter.ToString() +"_"+ name.Replace("\"",""));
+                            
+                            mainChart.Series.Add(names.Last());
+                            mainChart.Series[names.Last()].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
+                            mainChart.Series[names.Last()].ToolTip = "#VALX, #VALY";
                         }
                     }
                 }
                 else
                 {
-                    for (int i = 0; i < mainChart.Series.Count; i++)
+                    for (int i = 0; i < values.Length - 1; i++)
                     {
                         double x = 0;
                         double y = 0;
@@ -204,7 +240,7 @@ namespace CSVGraph
                         }
                         else
                         {
-                            mainChart.Series[i].Points.AddXY(x, y);
+                            mainChart.Series[names[i]].Points.AddXY(x, y);
                         }    
                     }
                 }
@@ -213,6 +249,7 @@ namespace CSVGraph
 
             mainChart.ApplyPaletteColors();
             calculationItemComboBox.Items.Clear();
+            legendListView.Items.Clear();
             foreach (Series item in mainChart.Series){
                 legendListView.Items.Add(@item.Name);
                 legendListView.Items[legendListView.Items.Count-1].BackColor = item.Color;
@@ -227,7 +264,12 @@ namespace CSVGraph
         private void legendListView_ItemChecked(object sender, System.Windows.Forms.ItemCheckedEventArgs e)
         {
             mainChart.Series[e.Item.Text].Enabled = e.Item.Checked;
-            mainChart.ChartAreas[0].RecalculateAxesScale();           
+            mainChart.ChartAreas[0].RecalculateAxesScale();  
+            if(mainChart.ChartAreas.FindByName(e.Item.Text) != null && !e.Item.Checked)
+            {
+                mainChart.Series[e.Item.Text].ChartArea = mainChart.ChartAreas.First().Name;
+                mainChart.ChartAreas.Remove(mainChart.ChartAreas[e.Item.Text]);
+            }         
         }
 
         private void mainChart_MouseDoubleClick(object sender, System.EventArgs e)
@@ -248,20 +290,40 @@ namespace CSVGraph
 
         private void mainChart_MouseClick(object sender, System.Windows.Forms.MouseEventArgs e)
         {
+            foreach (ChartArea ca in mainChart.ChartAreas)
+            {
+                if (ChartAreaClientRectangle(mainChart, ca).Contains(e.Location))
+                {
+                    dataCharAreaPre = dataCharArea;
+                    dataCharArea = ca.Name;
+                    break;
+                }
+            }
+
             System.Windows.Forms.MouseEventArgs me = (System.Windows.Forms.MouseEventArgs)e;
             if (me.Button == System.Windows.Forms.MouseButtons.Right)
             {
-                float pX = (float)mainChart.ChartAreas[0].AxisX.PixelPositionToValue(e.X);
-                float pY = (float)mainChart.ChartAreas[0].AxisY.PixelPositionToValue(e.Y); 
+                float pX = (float)mainChart.ChartAreas[dataCharArea].AxisX.PixelPositionToValue(e.X);
+                float pY = (float)mainChart.ChartAreas[dataCharArea].AxisY.PixelPositionToValue(e.Y);
                 addCross(pX, pY);
             }
         }
 
+        RectangleF ChartAreaClientRectangle(Chart chart, ChartArea CA)
+        {
+            RectangleF CAR = CA.Position.ToRectangleF();
+            float pw = chart.ClientSize.Width / 100f;
+            float ph = chart.ClientSize.Height / 100f;
+            return new RectangleF(pw * CAR.X, ph * CAR.Y, pw * CAR.Width, ph * CAR.Height);
+        }
+
         private void addCross(float x, float y){
-            if (calculationAreaPoints == null)
+            if (calculationAreaPoints == null || dataCharArea!=dataCharAreaPre)
             {
                 calculationAreaPoints = new LinkedList<PointF>();
                 calculationAreaPoints.AddLast(new PointF(x, y));
+                if(mainChart.Series.FindByName("cross1") != null)
+                    mainChart.Series.Remove(mainChart.Series["cross1"]);
 
                 mainChart.Series.Add("cross1");
                 mainChart.Series["cross1"].ChartType = SeriesChartType.FastLine;
@@ -276,6 +338,7 @@ namespace CSVGraph
                 mainChart.Series["cross1"].Points.AddXY(x, y);
                 mainChart.Series["cross1"].Points.AddXY(calculationAreaPoints.First().X, y);
                 mainChart.Series["cross1"].Points.AddXY(calculationAreaPoints.First().X, calculationAreaPoints.First().Y);
+                mainChart.Series["cross1"].ChartArea = dataCharArea;
                 calculateData();
             }
             else
