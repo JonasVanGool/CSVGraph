@@ -20,7 +20,7 @@ namespace CSVGraph
         string dataCharArea = "";
         string dataCharAreaPre = "";
         ContextMenu legendContectMenu;
-        ContextMenu chartAreaContectMenu;
+
         int addDataCounter = 0;
 
         public CSVGraph(string[] arguments = null)
@@ -43,11 +43,7 @@ namespace CSVGraph
                 {
                     AddData(new StreamReader(File.OpenRead(@filepath)), filepath.Split('\\').Last());
                 }
-            }
-            else
-            {
-                //AddData(new StreamReader(File.OpenRead(@"C:\\Lift1_EGV001_2015-11-05_133317.CSV")));
-            }                  
+            }               
         }
 
         ContextMenu createLegendContextMenu()
@@ -208,26 +204,70 @@ namespace CSVGraph
                 var values = line.Split(',');
                 if (first)
                 {
+                    // Check if file is correctly seperated
+                    if(values.Length == 1)
+                    {
+                        MessageBox.Show("File not seperated with ','");
+                        return;
+                    }
                     names.Clear();
                     if (mainChart.Series.FindByName("Series1") != null)
                         mainChart.Series.Remove(mainChart.Series.FindByName("Series1"));
                     //legendListView.Items.Clear();
                     legendListView.Columns[0].Text = "Legend";
                     legendListView.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+                    // Add velocity error
+                    Boolean actualVel = false;
+                    Boolean generatedVel = false;
+                    Boolean actualPos = false;
+                    Boolean generatedPos = false;
                     foreach (var name in values)
                     {
+                        if (name.Contains("ActVel") && !actualVel)
+                        {
+                            actualVel = true;
+                        }
+                        if (name.Contains("VelGen") && !generatedVel)
+                        {
+                            generatedVel = true;
+                        }
+                        if (name.Contains("ActPos") && !actualPos)
+                        {
+                            actualPos = true;
+                        }
+                        if (name.Contains("GenPos") && !generatedPos)
+                        {
+                            generatedPos = true;
+                        }
+
                         if (name != values[0])
                         {
-                            names.Add(addDataCounter.ToString() +"_"+ name.Replace("\"",""));
-                            
+                            names.Add(addDataCounter.ToString() +"_"+ name.Replace("\"",""));                          
                             mainChart.Series.Add(names.Last());
                             mainChart.Series[names.Last()].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
                             mainChart.Series[names.Last()].ToolTip = "#VALX, #VALY";
                         }
                     }
+
+                    if(actualVel && generatedVel)
+                    {
+                        names.Add(addDataCounter.ToString() + "_" + "VelERROR");
+                        mainChart.Series.Add(names.Last());
+                        mainChart.Series[names.Last()].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
+                        mainChart.Series[names.Last()].ToolTip = "#VALX, #VALY";
+                    }
+
+                    if (actualPos && generatedPos)
+                    {
+                        names.Add(addDataCounter.ToString() + "_" + "PosERROR");
+                        mainChart.Series.Add(names.Last());
+                        mainChart.Series[names.Last()].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
+                        mainChart.Series[names.Last()].ToolTip = "#VALX, #VALY";
+                    }
                 }
                 else
                 {
+                    double ActVel = double.MinValue, ActPos = double.MinValue, VelGen = double.MinValue, GenPos = double.MinValue, XVal = 0;
                     for (int i = 0; i < values.Length - 1; i++)
                     {
                         double x = 0;
@@ -240,8 +280,27 @@ namespace CSVGraph
                         }
                         else
                         {
+
+                            if (names[i].Contains("ActVel"))
+                                ActVel = y;
+                            if (names[i].Contains("VelGen"))
+                                VelGen = y;
+                            if (names[i].Contains("ActPos"))
+                                ActPos = y;
+                            if (names[i].Contains("GenPos"))
+                                GenPos = y;
+                            XVal = x;
                             mainChart.Series[names[i]].Points.AddXY(x, y);
                         }    
+                    }
+                    if (names.Exists(x => x.Equals(addDataCounter.ToString() + "_" + "VelERROR")))
+                    {
+                        mainChart.Series[addDataCounter.ToString() + "_" + "VelERROR"].Points.AddXY(XVal, (ActVel- VelGen));
+                    }
+
+                    if (names.Exists(x => x.Equals(addDataCounter.ToString() + "_" + "PosERROR")))
+                    {
+                        mainChart.Series[addDataCounter.ToString() + "_" + "PosERROR"].Points.AddXY(XVal, (ActPos - GenPos));
                     }
                 }
                 first = false;
@@ -259,6 +318,9 @@ namespace CSVGraph
             calculationItemComboBox.SelectedIndex = 0;
             tabControl1.SelectedIndex = 0;
             this.Text = workingFileInfo;
+
+            // Set defaults
+
         }
 
         private void legendListView_ItemChecked(object sender, System.Windows.Forms.ItemCheckedEventArgs e)
