@@ -193,9 +193,25 @@ namespace CSVGraph
 
         private void AddData(StreamReader csvStream, string workingFileInfo)
         {
-            addDataCounter++;
-            var reader = csvStream; // new StreamReader(File.OpenRead(@filePath));
+            var reader = csvStream; 
             List<string> names = new List<string>();
+
+            //if (mainChart.Series.FindByName("Series1") != null)
+            //    mainChart.Series.Remove(mainChart.Series.FindByName("Series1"));
+
+            if (chbAdd.Checked)
+            {
+                addDataCounter++;
+            }
+            else
+            {
+                mainChart.Series.Clear();
+                addDataCounter = 1;
+            }
+       
+            legendListView.Columns[0].Text = "Legend";
+            legendListView.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+
 
             Boolean first = true;
             while (!reader.EndOfStream)
@@ -210,13 +226,8 @@ namespace CSVGraph
                         MessageBox.Show("File not seperated with ','");
                         return;
                     }
-                    names.Clear();
-                    if (mainChart.Series.FindByName("Series1") != null)
-                        mainChart.Series.Remove(mainChart.Series.FindByName("Series1"));
-                    //legendListView.Items.Clear();
-                    legendListView.Columns[0].Text = "Legend";
-                    legendListView.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
-                    // Add velocity error
+
+                    // Add velocity and position error
                     Boolean actualVel = false;
                     Boolean generatedVel = false;
                     Boolean actualPos = false;
@@ -318,8 +329,6 @@ namespace CSVGraph
             calculationItemComboBox.SelectedIndex = 0;
             tabControl1.SelectedIndex = 0;
             this.Text = workingFileInfo;
-
-            // Set defaults
 
         }
 
