@@ -51,7 +51,6 @@
             this.dataBrowseButton = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.pageSetupDialog1 = new System.Windows.Forms.PageSetupDialog();
-            this.chbAdd = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.mainChart)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -189,7 +188,6 @@
             // tabPage2
             // 
             this.tabPage2.BackColor = System.Drawing.Color.LightGray;
-            this.tabPage2.Controls.Add(this.chbAdd);
             this.tabPage2.Controls.Add(this.dataRemoteList);
             this.tabPage2.Controls.Add(this.label6);
             this.tabPage2.Controls.Add(this.label5);
@@ -275,16 +273,6 @@
             this.textBox1.Size = new System.Drawing.Size(530, 25);
             this.textBox1.TabIndex = 0;
             // 
-            // chbAdd
-            // 
-            this.chbAdd.AutoSize = true;
-            this.chbAdd.Location = new System.Drawing.Point(676, 32);
-            this.chbAdd.Name = "chbAdd";
-            this.chbAdd.Size = new System.Drawing.Size(45, 17);
-            this.chbAdd.TabIndex = 7;
-            this.chbAdd.Text = "Add";
-            this.chbAdd.UseVisualStyleBackColor = true;
-            // 
             // CSVGraph
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -327,7 +315,6 @@
         private System.Windows.Forms.PageSetupDialog pageSetupDialog1;
         private System.Windows.Forms.ListView dataRemoteList;
         private System.Windows.Forms.ColumnHeader columnHeader1;
-        private System.Windows.Forms.CheckBox chbAdd;
     }
 }
 

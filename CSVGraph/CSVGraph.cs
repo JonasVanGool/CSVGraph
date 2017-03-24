@@ -11,17 +11,24 @@ using System.IO;
 using System.Windows.Forms.DataVisualization.Charting;
 using System.Windows;
 using System.Net;
+using System.Globalization;
 
 namespace CSVGraph
 {
     public partial class CSVGraph : Form
     {
+        // global ftp
+        FtpWebRequest globalRequest;
+        FtpWebResponse globalResponse;
+        Stream globalStream;
+        StreamReader globalStreamReader;
+
+
         LinkedList<PointF> calculationAreaPoints;
         string dataCharArea = "";
         string dataCharAreaPre = "";
         ContextMenu legendContectMenu;
-
-        int addDataCounter = 0;
+        List<String> activeFiles = new List<string>();
 
         public CSVGraph(string[] arguments = null)
         {
@@ -138,18 +145,8 @@ namespace CSVGraph
             {
                 Console.WriteLine(dataRemoteList.SelectedItems[0].Text);
                 string adress = "ftp://" + dataIPTextBox.Text + "/" + dataRemoteList.SelectedItems[0].Text;
-                // Get the object used to communicate with the server.
-                FtpWebRequest request = (FtpWebRequest)WebRequest.Create(adress);
-                request.Method = WebRequestMethods.Ftp.DownloadFile;
-
-                // This example assumes the FTP site uses anonymous logon.
-                request.Credentials = new NetworkCredential("ftpUser", "egvFTP");
-
-                FtpWebResponse response = (FtpWebResponse)request.GetResponse();
-
-                Stream responseStream = response.GetResponseStream();
-                StreamReader reader = new StreamReader(responseStream);
-                AddData(reader, adress);
+                FTP_downloadFile(adress);
+                AddData(globalStreamReader, adress);
                 tabControl1.SelectedIndex = 0;
             }
             catch (SystemException e1)
@@ -193,28 +190,27 @@ namespace CSVGraph
 
         private void AddData(StreamReader csvStream, string workingFileInfo)
         {
+            if (mainChart.Series.FindByName("Series1") != null)
+            {
+                mainChart.Series.Remove(mainChart.Series["Series1"]);
+            }
             var reader = csvStream; 
             List<string> names = new List<string>();
+            string type = workingFileInfo.Split('\\').Last().Split('/').Last().Split('_').First();
+            Boolean update = true;
 
-            //if (mainChart.Series.FindByName("Series1") != null)
-            //    mainChart.Series.Remove(mainChart.Series.FindByName("Series1"));
-
-            if (chbAdd.Checked)
-            {
-                addDataCounter++;
-            }
-            else
-            {
-                mainChart.Series.Clear();
-                addDataCounter = 1;
-            }
-       
             legendListView.Columns[0].Text = "Legend";
             legendListView.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
 
+            // Check if type all ready exist
+            if (!activeFiles.Exists(x => x.Equals(type)))
+            {
+                activeFiles.Add(type);
+                update = false;
+            }
 
             Boolean first = true;
-            while (!reader.EndOfStream)
+            while (reader.Peek() != -1)
             {
                 var line = reader.ReadLine();
                 var values = line.Split(',');
@@ -250,30 +246,50 @@ namespace CSVGraph
                         {
                             generatedPos = true;
                         }
-
+                        
                         if (name != values[0])
                         {
-                            names.Add(addDataCounter.ToString() +"_"+ name.Replace("\"",""));                          
-                            mainChart.Series.Add(names.Last());
-                            mainChart.Series[names.Last()].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
-                            mainChart.Series[names.Last()].ToolTip = "#VALX, #VALY";
+                            if (!update)
+                            {
+                                names.Add(activeFiles.Last() + "_" + name.Replace("\"", ""));
+                                mainChart.Series.Add(names.Last());
+                                mainChart.Series[names.Last()].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
+                                mainChart.Series[names.Last()].ToolTip = "#VALX, #VALY";
+                                mainChart.Series[names.Last()].BorderWidth = 2;
+                            }
+                            else{
+                                names.Add(type + "_" + name.Replace("\"", ""));
+                                mainChart.Series[type + "_" + name.Replace("\"", "")].Points.Clear();
+                            }
                         }
                     }
 
-                    if(actualVel && generatedVel)
+                    if(actualVel && generatedVel && !update)
                     {
-                        names.Add(addDataCounter.ToString() + "_" + "VelERROR");
+                        names.Add(type + "_" + "VelERROR");
                         mainChart.Series.Add(names.Last());
                         mainChart.Series[names.Last()].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
                         mainChart.Series[names.Last()].ToolTip = "#VALX, #VALY";
+                        mainChart.Series[names.Last()].BorderWidth = 2;
+                    }
+                    else if (actualVel && generatedVel)
+                    {
+                        names.Add(type + "_" + "VelERROR");
+                        mainChart.Series[type + "_" + "VelERROR"].Points.Clear();
                     }
 
-                    if (actualPos && generatedPos)
+                    if (actualPos && generatedPos && !update)
                     {
-                        names.Add(addDataCounter.ToString() + "_" + "PosERROR");
+                        names.Add(type + "_" + "PosERROR");
                         mainChart.Series.Add(names.Last());
                         mainChart.Series[names.Last()].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine;
                         mainChart.Series[names.Last()].ToolTip = "#VALX, #VALY";
+                        mainChart.Series[names.Last()].BorderWidth = 2;
+                    }
+                    else if (actualPos && generatedPos)
+                    {
+                        names.Add(type + "_" + "PosERROR");
+                        mainChart.Series[type + "_" + "PosERROR"].Points.Clear();
                     }
                 }
                 else
@@ -304,32 +320,35 @@ namespace CSVGraph
                             mainChart.Series[names[i]].Points.AddXY(x, y);
                         }    
                     }
-                    if (names.Exists(x => x.Equals(addDataCounter.ToString() + "_" + "VelERROR")))
+                    if (names.Exists(x => x.Equals(activeFiles.Last()+ "_" + "VelERROR")))
                     {
-                        mainChart.Series[addDataCounter.ToString() + "_" + "VelERROR"].Points.AddXY(XVal, (ActVel- VelGen));
+                        mainChart.Series[activeFiles.Last() + "_" + "VelERROR"].Points.AddXY(XVal, (ActVel- VelGen));
                     }
 
-                    if (names.Exists(x => x.Equals(addDataCounter.ToString() + "_" + "PosERROR")))
+                    if (names.Exists(x => x.Equals(activeFiles.Last() + "_" + "PosERROR")))
                     {
-                        mainChart.Series[addDataCounter.ToString() + "_" + "PosERROR"].Points.AddXY(XVal, (ActPos - GenPos));
+                        mainChart.Series[activeFiles.Last() + "_" + "PosERROR"].Points.AddXY(XVal, (ActPos - GenPos));
                     }
                 }
                 first = false;
             }
 
-            mainChart.ApplyPaletteColors();
-            calculationItemComboBox.Items.Clear();
-            legendListView.Items.Clear();
-            foreach (Series item in mainChart.Series){
-                legendListView.Items.Add(@item.Name);
-                legendListView.Items[legendListView.Items.Count-1].BackColor = item.Color;
-                calculationItemComboBox.Items.Add(@item.Name);
+            if (!update)
+            {
+                mainChart.ApplyPaletteColors();
+                calculationItemComboBox.Items.Clear();
+                legendListView.Items.Clear();
+                foreach (Series item in mainChart.Series)
+                {
+                    legendListView.Items.Add(@item.Name);
+                    legendListView.Items[legendListView.Items.Count - 1].BackColor = item.Color;
+                    calculationItemComboBox.Items.Add(@item.Name);
+                }
+                legendListView.Items[0].Checked = true;
+                calculationItemComboBox.SelectedIndex = 0;
+                tabControl1.SelectedIndex = 0;
+                this.Text = workingFileInfo;
             }
-            legendListView.Items[0].Checked = true;
-            calculationItemComboBox.SelectedIndex = 0;
-            tabControl1.SelectedIndex = 0;
-            this.Text = workingFileInfo;
-
         }
 
         private void legendListView_ItemChecked(object sender, System.Windows.Forms.ItemCheckedEventArgs e)
@@ -497,32 +516,17 @@ namespace CSVGraph
             try
             {
                 string adress = "ftp://" + dataIPTextBox.Text + "/";
-                // Get the object used to communicate with the server.
-                FtpWebRequest request = (FtpWebRequest)WebRequest.Create(adress);
-                request.Method = WebRequestMethods.Ftp.ListDirectoryDetails;
-
-                // This example assumes the FTP site uses anonymous logon.
-                request.Credentials = new NetworkCredential("ftpUser","egvFTP");
-
-                FtpWebResponse response = (FtpWebResponse)request.GetResponse();
-
-                Stream responseStream = response.GetResponseStream();
-                StreamReader reader = new StreamReader(responseStream);
+                FTP_downloadDirectory(adress);
                 string line;
                 string[] lineParts;
                 dataRemoteList.Items.Clear();
-                while ((line = reader.ReadLine()) != null)
+                while ((line = globalStreamReader.ReadLine()) != null)
                 {
                     if(line.EndsWith(".CSV")){
                         lineParts = line.Split(' ');
                         dataRemoteList.Items.Add(lineParts[lineParts.Length - 1]);
                     }
                 }
-
-                Console.WriteLine("Directory List Complete, status {0}", response.StatusDescription);
-
-                reader.Close();
-                response.Close();
             }
             catch(SystemException e1)
             {
@@ -534,6 +538,111 @@ namespace CSVGraph
         private void setLineWidth(int lineWidth)
         {
             mainChart.Series[legendListView.SelectedItems[0].Text].BorderWidth = lineWidth;
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (keyData == (Keys.Control | Keys.U))
+            {
+                // Get last type
+                if (activeFiles.Count == 0)
+                    return base.ProcessCmdKey(ref msg, keyData);
+    
+                // Check if IP is valid
+                try
+                {
+                    string adress = "ftp://" + dataIPTextBox.Text + "/";
+                    FTP_downloadDirectory(adress);
+                    string directoryRaw = "",line = "";
+                    List<String> remoteDirectory = new List<String>();
+                    FTP_downloadDirectory(adress);
+                    while (globalStreamReader.Peek() != -1)
+                    {
+                        directoryRaw += globalStreamReader.ReadLine() + "|";
+                    }
+
+                    /* Return the Directory Listing as a string Array by Parsing 'directoryRaw' with the Delimiter you Append (I use | in This Example) */
+                    string[] directoryList = null;
+                    try
+                    {
+                        directoryList = directoryRaw.Split("|".ToCharArray());
+                        Array.Sort(directoryList);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.ToString());
+                    }
+
+                    foreach(string activeFile in activeFiles)
+                    {
+                        foreach (string data in directoryList)
+                        {
+                            if (data.EndsWith(".CSV") && data.Contains(activeFile))
+                            {
+                                remoteDirectory.Add(data);
+                            }
+                        }
+
+                        if (remoteDirectory.Count == 0)
+                            continue;
+
+                        adress = "ftp://" + dataIPTextBox.Text + "/" + remoteDirectory.Last().Split(' ').Last();
+                        FTP_downloadFile(adress);
+                        AddData(globalStreamReader, adress);
+                    }
+                }
+                catch (SystemException e1)
+                {
+                    MessageBox.Show("Connection error! " + e1.ToString());
+                }
+                return true;
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
+
+        void FTP_downloadFile(String path)
+        {
+            if (globalResponse != null)
+                globalResponse.Close();
+            if (globalStream != null)
+                globalStream.Close();
+            if (globalStreamReader != null)
+                globalStreamReader.Close();
+
+
+            // Get the object used to communicate with the server.
+            globalRequest = (FtpWebRequest)WebRequest.Create(path);
+            globalRequest.Method = WebRequestMethods.Ftp.DownloadFile;
+
+            // This example assumes the FTP site uses anonymous logon.
+            globalRequest.Credentials = new NetworkCredential("ftpUser", "egvFTP");
+
+            globalResponse = (FtpWebResponse)globalRequest.GetResponse();
+
+            globalStream = globalResponse.GetResponseStream();
+            globalStreamReader = new StreamReader(globalStream);
+        }
+
+        void FTP_downloadDirectory(String path)
+        {
+            if (globalResponse != null)
+                globalResponse.Close();
+            if (globalStream != null)
+                globalStream.Close();
+            if (globalStreamReader != null)
+                globalStreamReader.Close();
+
+            // Get the object used to communicate with the server.
+            globalRequest = (FtpWebRequest)WebRequest.Create(path);
+            globalRequest.Method = WebRequestMethods.Ftp.ListDirectoryDetails;
+
+            // This example assumes the FTP site uses anonymous logon.
+            globalRequest.Credentials = new NetworkCredential("ftpUser", "egvFTP");
+
+            globalResponse = (FtpWebResponse)globalRequest.GetResponse();
+
+            globalStream = globalResponse.GetResponseStream();
+            globalStreamReader = new StreamReader(globalStream);
         }
 
     }
